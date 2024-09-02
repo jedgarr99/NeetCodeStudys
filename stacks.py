@@ -4,25 +4,23 @@ from typing import List
 # 155. Min Stack    https://leetcode.com/problems/min-stack/description/  
 # Design a stack that supports push, pop, top, and retrieving the minimum element in constant time.
 class MinStack:
-
     def __init__(self):
-        return
-        
-
+        self.stack=[]
+        self.minStack=[]
+    
     def push(self, val: int) -> None:
-        return
+        self.stack.append(val)
+        self.minStack.append(min(val,self.minStack[-1] if self.minStack else val))
         
-
     def pop(self) -> None:
-        return
-        
+        self.stack.pop()
+        self.minStack.pop()
 
     def top(self) -> int:
-        return
-        
+        return self.stack[-1]
 
     def getMin(self) -> int:
-        return
+        return self.minStack[-1]    
         
 
 
@@ -39,7 +37,17 @@ class Solution():
     # 20. Valid Parentheses       https://leetcode.com/problems/valid-parentheses/description/
     # Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
     def isValid(self, s: str) -> bool:
-        return
+        dic={"{":"}","(":")","[":"]"}
+        stack=deque()
+        for c in s:
+            if c in dic:
+                stack.append(c)
+            else:
+                if not stack or dic[stack.pop()]!=c  :
+                    return False
+                
+        return len(stack)==0
+
     
     # 150. Evaluate Reverse Polish Notation       https://leetcode.com/problems/evaluate-reverse-polish-notation/description/
     # Evaluate the expression
@@ -74,8 +82,6 @@ class Solution():
     # Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
     def generateParenthesis(self, n: int) -> list[str]:
         def generateAux(l:int,r:int,par:str):
-
-
             if len(par)==2*n:
                 res.append(par)
                 return
@@ -91,11 +97,36 @@ class Solution():
         return res
     
 
+    # def generate(s, left, right):
+    #         if left ==n and right == n:
+    #             res.append(s)
+    #             return
+
+    #         if left<n:
+    #             newS=s+'('
+    #             generate(newS,left+1,right)
+    #         if right<n:
+    #             newS=s+')'
+    #             generate(newS,left,right+1)
+    #     res=[]
+    #     generate("",0,0)
+    #     return res
+    
+
     # 739. Daily Temperatures     https://leetcode.com/problems/daily-temperatures/description/
     # Given an array of integers temperatures represents the daily temperatures, return an array answer such that answer[i] 
     # is the number of days you have to wait after the ith day to get a warmer temperature. 
     def dailyTemperatures(self, temperatures: List[int]) -> List[int]:
-        return
+        stack=deque() #indexes
+        res=[0]*len(temperatures)
+
+        for newI,t in enumerate(temperatures):
+            while stack and temperatures[stack[-1]]<t:
+                oldI=stack.pop()
+                res[oldI]=newI-oldI
+            stack.append(newI)
+
+        return res
 
     # 853. Car Fleet      https://leetcode.com/problems/car-fleet/description/
     # Return the number of car fleets that will arrive at the destination.
@@ -114,47 +145,33 @@ class Solution():
                 time=eta[i]
                 fleets+=1
         return fleets
-    #limpiar y corregir este codigo , 84. Largest Rectangle in Histogram
+
     
 
     # 84. Largest Rectangle in Histogram      https://leetcode.com/problems/largest-rectangle-in-histogram/description/ 
     # Given an array of integers heights representing the histogram's bar height where the width of each bar is 1, return the 
     # area of the largest rectangle in the histogram.
     def largestRectangleArea(self, heights: list[int]) -> int:
-        minimumLeft=[-1]*len(heights)
-        stack=deque()
+        maxArea=0
+        stack=deque() #(INDEX,HEIGHT)
+        heights.append(0)
 
-        for i in range(len(heights)):
-            #looking for the next smaller
-            while stack and heights[stack[0]]>heights[i]:
-                minimumLeft[stack[0]]=i+1
-                stack.popleft()
-            stack.appendleft(i)
-        print(*minimumLeft)
-
-        minimumRight=[-1]*len(heights)
-        stack=deque()
-
-        for i in range(len(heights)-1,-1,-1):
-            #looking for the next smaller
-            while stack and heights[stack[0]]>heights[i]:
-                minimumRight[stack[0]]=i+1
-                stack.popleft()
-            stack.appendleft(i)
-        print(*minimumRight)
-
-        maxA=0
-        for i in range(len(heights)):
-
-            r=minimumLeft[i] if minimumLeft[i]!=-1 else len(heights)+1
-            l=minimumRight[i] if minimumRight[i]!=-1 else 0
-            wide=r-l-1
-            area=wide*heights[i]
-            if area>maxA:
-                maxA=area
+        for index, h in enumerate(heights):
+            #print(stack)
+            #print(index)
+            prevIndex=index
+            while stack and stack[-1][1]>h:
+                prevIndex,prevHeight=stack.pop()
+                newArea=(index-prevIndex)*prevHeight
+                maxArea=max(maxArea,newArea)
+            stack.append((prevIndex,h))
+            #print(stack)
+            #print('---------')
+            
+        return maxArea
 
 
-        return maxA
+
     
         
 

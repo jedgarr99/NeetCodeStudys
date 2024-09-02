@@ -20,9 +20,7 @@ class BST:
 
         
     def getRoot(self):
-        return self.root
-
-    
+        return self.root   
 
     def insert(self,num:int):
         leaf=TreeNode(val=num)
@@ -96,7 +94,6 @@ class BT:
                 print('insertando ',nums[index] ,'en derecha de ',node.val)
             index+=1
     
-
     def printTree(self):
         next=deque()
         next.append(self.root)
@@ -108,86 +105,72 @@ class BT:
                 next.append(node.left)
             if node.right:
                 next.append(node.right)
-
-        
-
         
 class Solution:
+    #226. Invert Binary Tree        https://leetcode.com/problems/invert-binary-tree/description/
+    #Given the root of a binary tree, invert the tree, and return its root.
     def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
-        if root is None:
+        if not root:
             return None
-         
-        next=deque()
-        print(root.val)
-        next.append(root)
 
-        while next:
-            node=next.popleft()
-            print(node.val)
-            aux=node.left
-            node.left=node.right
-            node.right=aux
+        que=deque()
+        que.append(root)
+
+        while que:
+            node=que.popleft()
+            node.left,node.right=node.right,node.left
             if node.left:
-                next.append(node.left)
+                que.append(node.left)
             if node.right:
-                next.append(node.right)
+                que.append(node.right)
 
         return root
     
-    #104. Maximum Depth of Binary Tree
+    #104. Maximum Depth of Binary Tree      https://leetcode.com/problems/maximum-depth-of-binary-tree/
+    # Given the root of a binary tree, return its maximum depth.
     def maxDepth(root: Optional[TreeNode]) -> int:
-        def maxDepthAux(node:Optional[TreeNode],count):
-            if node.left or node.right:
-                if node.left:
-                    countLeft=maxDepthAux(node.left,count+1)
-                if node.right:
-                    countRight=maxDepthAux(node.right,count+1)
-
-                return max(countLeft,countRight)
-            else: 
-                return count
-        if root:
-            return maxDepthAux(root,1)
-        else:
-            return 0
-    
-    #543. Diameter of Binary Tree
-    def diameterOfBinaryTree(self, root: Optional[TreeNode]) -> int:
-        res=[0]
-
         def dfs(node):
-
             if not node:
-                return -1
-            
-            left=dfs(node.left)
-            right=dfs(node.right)
+                return 0
+            if not node.left and not node.right:
+                return 1
+            return 1+max(dfs(node.left), dfs(node.right))
+        
+        return dfs(root)
+        
+    
+    #543. Diameter of Binary Tree           https://leetcode.com/problems/diameter-of-binary-tree/
+    #The diameter of a binary tree is the length of the longest path between any two nodes in a tree.
+    #  This path may or may not pass through the root (number of edges)
+    def diameterOfBinaryTree(self, root: Optional[TreeNode]) -> int:
+        def dfs(node):
+            if not node:
+                return 0
+            l=dfs(node.left)
+            r=dfs(node.right)
 
-            height=left+right+2
-            res[0]=max(res[0],height)
+            res[0]=max(res[0],l+r)
+            return max(l,r)+1
 
-            return 1+max(left,right)
+        res=[0]
         dfs(root)
         return res[0]
 
         #110. Balanced Binary Tree
     def isBalanced(self, root: Optional[TreeNode]) -> bool:
-        res=[True]
-
         def dfs(node):
             if not node:
-                return -1
-            
-            left=dfs(node.left)
-            right=dfs(node.right)
-
-            if left-right>1 or right - left>1:
-                res[0]=False
-
-            return max(left,right)+1
-
-
-        dfs(root)
+                return (True,0)
+            valueL,l=dfs(node.left)
+            valueR,r=dfs(node.right)
+            if not valueL or not valueR:
+                return((False,0))
+            if max(l,r)-min(l,r)>1:
+                return((False,0))
+            else: 
+                return((True,max(l,r)+1))
+        return dfs(root)[0]
+        
         return res[0]
     
     #100. Same Tree
@@ -198,31 +181,24 @@ class Solution:
         if not p or not q or p.val!=q.val:
             return False
 
-
         return ( self.isSameTree(p.left,q.left)   and self.isSameTree(p.right,q.right)   )
     
 
     #572. Subtree of Another Tree
     def isSubtree(self, root: Optional[TreeNode], subRoot: Optional[TreeNode]) -> bool:
-
-
-        def isSameTree(p: Optional[TreeNode], q: Optional[TreeNode]) -> bool:
-
+        def isSameTree( p, q):
             if not p and not q:
                 return True
-            if not p or not q or p.val!=q.val:
+            if not p or not q or p.val != q.val:
                 return False
-
-
-            return ( isSameTree(p.left,q.left)   and isSameTree(p.right,q.right)   )
+            return (isSameTree(p.left,q.left) and isSameTree(p.right,q.right))
+        if not subRoot:
+            return True
         if not root:
             return False
-
-        if isSameTree(root,subRoot):
-            return True 
+        return isSameTree(root,subRoot) or self.isSubtree(root.left,subRoot) or self.isSubtree(root.right,subRoot)
         
-  
-        return self.isSubtree(root.left,subRoot) or self.isSubtree(root.right,subRoot) 
+        
     
 
     #235. Lowest Common Ancestor of a Binary Search Tree
@@ -264,85 +240,67 @@ class Solution:
                 break
         return curr
     
-    #102. Binary Tree Level Order Traversal
+    #102. Binary Tree Level Order Traversal     https://leetcode.com/problems/binary-tree-level-order-traversal/
+    # Given the root of a binary tree, return the level order traversal of its nodes' values.
     def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
-
-        #bfs but i need to separate each level
-        #i could use aa counter or separators?
-        res=[]
-        que=deque()
-
-        if root:  
-            que.append(root)
-            que.append(None)
-            sublist=[]
-        
-        while que:
-            
-            curr=que.popleft()
-            if curr:
-                sublist.append(curr.val)
-                if curr.left:
-                    que.append(curr.left)
-                if curr.right:
-                    que.append(curr.right)
-                next=que.popleft()
-                if not next:
-                    que.append(None)
-                que.appendleft(next)
-            elif len(que)>0:
-                res.append(sublist)
-                sublist=[]
-                #que.append(None)
-        return res
-    
-    #199. Binary Tree Right Side View
-    #its easier with a for len(que)
-    def rightSideView(self, root: Optional[TreeNode]) -> List[int]:
-        res=[]
-        que=deque()
-
-        if root:  
-            que.append(root)
-            print(root.val)
-            que.append(None)
-        
-        while que:
-            
-            curr=que.popleft()
-            if curr:
-                if curr.left:
-                    que.append(curr.left)
-                if curr.right:
-                    que.append(curr.right)
-                next=que.popleft()
-                if not next:
-                    res.append(curr.val)
-                    que.append(None)
-                que.appendleft(next)
-         
-        return res
-    
-    #1448. Count Good Nodes in Binary Tree
-
-    def goodNodes(self, root: TreeNode) -> int:
-        count=[0]
-
-        def countGoodNodes(root:TreeNode, maxNode):
-            if not root:
-                return count
-            #print(root.val,' >= max ',maxNode)
-            if root.val>=maxNode:
-                count[0]+=1
-                maxNode=root.val
-           
-       
-            return countGoodNodes(root.left,maxNode)+countGoodNodes(root.right,maxNode)
         if not root:
-            return 0
+            return []
+        que=deque()
+        que.append(root)
+        res=[]
+        while que:
+            partialRes=[]
+            for i in range(len(que)):
+                node=que.popleft()
+                partialRes.append(node.val)
+                if node.left:
+                    que.append(node.left)
+                if node.right:
+                    que.append(node.right)
+            res.append(partialRes)
+        return res
+
+    
+    #199. Binary Tree Right Side View       https://leetcode.com/problems/binary-tree-right-side-view/
+    #Given the root of a binary tree, imagine yourself standing on the right side of it, return the 
+    # values of the nodes you can see ordered from top to bottom.its easier with a for len(que)
+    def rightSideView(self, root: Optional[TreeNode]) -> List[int]:
+        if not root:
+            return []
+
+        que=deque()
+        que.append(root)
+        res=[]
+
+        while que:
+            for i in range(len(que)):
+                node=que.popleft()
+                if node.left:
+                    que.append(node.left)
+                if node.right:
+                    que.append(node.right)
+
+            res.append(node.val)
+        return res
+    
+    #1448. Count Good Nodes in Binary Tree      https://leetcode.com/problems/count-good-nodes-in-binary-tree/
+    # Given a binary tree root, a node X in the tree is named good if in the path from root to X there are no 
+    # nodes with a value greater than X.
+    def goodNodes(self, root: TreeNode) -> int:
+        self.count=0
+
+        def dfs(node,maxValue):
+            if not node:
+                return
+            
+            if node.val>= maxValue:
+                self.count+=1
+            dfs(node.left,max(maxValue,node.val))
+            dfs(node.right,max(maxValue,node.val))
+            return
         
-        countGoodNodes(root,root.val)
-        return count[0]
+        dfs(root,root.val)
+        return self.count
     
     #98. Validate Binary Search Tree
     #boundaries
@@ -361,31 +319,20 @@ class Solution:
       
 
     #230. Kth Smallest Element in a BST
-    #dfs inorder traversal
+    #dfs inorder traversal, it can be done iteratively
     def kthSmallest(self, root: Optional[TreeNode],k: int) -> int:
-        counter=[0]
         res=[]
 
-
-
-        def dfsInorder(root):
-            if root:
-
-            # First recur on left child
-                dfsInorder(root.left)
-                counter[0]+=1
-                if counter[0]==k:
-                    res.append(root.val)
-                    #print(' ---',root.val)
-
-                # Then print the data of node
-                #print(root.val, end=" "),
-
-                # Now recur on right child
-                dfsInorder(root.right)
-        dfsInorder(root)
-
-        return res[0]
+        def dfs(node):
+            if not node: 
+                return
+            dfs(node.left)
+            res.append(node.val)
+            dfs(node.right)
+            return
+        
+        dfs(root)
+        return res[k-1]
     
     #105. Construct Binary Tree from Preorder and Inorder Traversal
     #first value o preorder is root
@@ -405,21 +352,19 @@ class Solution:
     #or, it can help the chain max(left, right)+its value
     # i dont add the child if its less than 0
     def maxPathSum(self, root: Optional[TreeNode]) -> int:
-        maxSum=[-math.inf]
+        self.res=-math.inf
 
-        def maxPathSumAux(root):
-            if not root:
+        def dfs(node):
+            if not node:
                 return 0
-            left=max(maxPathSumAux(root.left),0)
-            right=max(maxPathSumAux(root.right),0)
+            l=max(dfs(node.left),0)
+            r=max(dfs(node.right),0)
+            self.res=max(self.res,  l+r+node.val  )
+
+            return max(l,r)+node.val
             
-            thisPath=left+right+root.val
-            if thisPath>maxSum[0]:
-                maxSum[0]=thisPath
-            return max(left,right)+root.val
-        
-        maxPathSumAux(root)
-        return maxSum[0]
+        dfs(root)
+        return self.res
 
 
 # 297. Serialize and Deserialize Binary Tree
@@ -433,46 +378,25 @@ class Codec:
         :rtype: str
         """
 
-        que=deque()
+
+        que=deque([root])
         res=[]
-        if root:
-            que.append(root)
-            res.append(str(root.val))
         while que:
-            validLevel=False
-            levelLength=len(que)
-            appendedNones=0
-            for _ in range(levelLength):
-                node=que.popleft()
-                left=node.left
-                right=node.right
-                if left:
-                    res.append(str(left.val))
-                    que.append(left)
-                    validLevel=True
-                else:
-                    res.append("None")
-                    appendedNones+=1
-
-                if right:
-                    res.append(str(right.val))
-                    que.append(right)
-                    validLevel=True
-                else:
-                    res.append("None")
-                    appendedNones+=1
-                #print(node.val,' ',validLevel)
-                
-
-            if not validLevel:
-                res=res[:-appendedNones]
-        result_string = '[' + ', '.join(res) + ']'
-
-        return result_string
-
+            node=que.popleft()
             
-                
+            if node:
+                res.append(str(node.val))
+                que.append(node.left)
+                que.append(node.right)
+            else:
+                res.append('None')
+        for x in res[::-1]:
+            if x=='None':
+                res.pop()
+            else:
+                break
 
+        return '#'.join(res)
 
         
 
@@ -482,39 +406,33 @@ class Codec:
         :type data: str
         :rtype: TreeNode
         """
-        nodesString=deque(ast.literal_eval(data))
-        nodes=deque()
-        if nodesString:
-            nextValue=nodesString.popleft()
-            if nextValue:
+        if not data:
+            return None
+        data=data.split('#') 
+        queData=deque(data)
+        queData.appendleft('None')
+
+        dummy=TreeNode(0)
+        queNodes=deque()
+        queNodes.append(dummy)
+             
+        while queNodes and queData:
+           
+            node=queNodes.popleft()
+            valueL=queData.popleft()
+            valueR=queData.popleft() if queData else 'None'
+
+            if valueL != 'None':
+                valueL=int(valueL)
+                node.left=TreeNode(valueL)
+                queNodes.append(node.left)
+            if valueR != 'None':
+                valueR=int(valueR)
+                node.right=TreeNode(valueR)
+                queNodes.append(node.right)
                 
-                nextNode=TreeNode(nextValue)
-                nodes.appendleft(nextNode)
-                mainNode=nextNode
-            
-        while nodesString:
-            root=nodes.popleft()
-            nextValue=nodesString.popleft()
-
-            if nextValue:
-
-                nextNode=TreeNode(nextValue)
-                root.left=nextNode
-                nodes.append(nextNode)
-                print('Insertando ', nextValue, ' a la izquierda de: ',root.val)
-            
-            if nodesString:
-                nextValue=nodesString.popleft()
-                if nextValue:
-                    nextNode=TreeNode(nextValue)
-                    root.right=nextNode
-                    nodes.append(nextNode)
-                    print('Insertando ', nextValue, ' a la derecha de: ',root.val)
-
-        return mainNode
-            
-            
-                
+        return dummy.right
+             
         
 
 # Your Codec object will be instantiated and called as such:

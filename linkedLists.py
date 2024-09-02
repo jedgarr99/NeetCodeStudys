@@ -1,6 +1,11 @@
 
 from collections import deque
 from typing import List, Optional
+class Node:
+    def __init__(self, x: int, next: 'Node' = None, random: 'Node' = None):
+        self.val = int(x)
+        self.next = next
+        self.random = random
 
 class ListNode:
     def __init__(self, val=0, next=None):
@@ -31,44 +36,31 @@ class Auxiliary:
 
         
 class Solution:
-    def reverseListUsingStack(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        stack=deque()
-        if not head:
-            return None
-        
-        curr=head
-        stack.append(None)
-        while curr.next:
-            #print(curr.val)
-            stack.append(curr)
-            curr=curr.next
-
-        newHead=curr
-        prev=newHead
-        print(prev.val)
-        while stack:
-            prev.next=stack.pop()
-       
-            prev=prev.next
-         
-
-        return newHead
-    
+    # 206. Reverse Linked List        https://leetcode.com/problems/reverse-linked-list/description/
+    # Given the head of a singly linked list, reverse the list, and return the reversed list.
     def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        prevNode=None
         currNode=head
-    
-        
-        while currNode:
-            
-            nextNode=currNode.next
-            currNode.next=prevNode
-            
-            prevNode=currNode
-            currNode=nextNode
+        prevNode=None
 
+        while currNode:
+            aux=currNode.next
+            currNode.next=prevNode
+            prevNode=currNode
+            currNode=aux
         return prevNode
-    
+
+    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        dummy=ListNode()
+        def reverse(currNode):
+            if not currNode:    
+                return dummy
+            restList=reverse(currNode.next)
+            restList.next=currNode
+            currNode.next=None
+            return currNode
+        reverse(head)
+        return dummy.next
+
     def reverseListRecursive(self, head: Optional[ListNode]) -> Optional[ListNode]:
 
         if not head:
@@ -82,86 +74,72 @@ class Solution:
 
         return newHead
     
+
+    # 21. Merge Two Sorted Lists      https://leetcode.com/problems/merge-two-sorted-lists/description/
+    # Merge the two lists into one sorted list
     def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
-        head=None
-        curr=ListNode()
-        first=True
+        dummy=ListNode()
+        curr=dummy
 
         while list1 and list2:
             if list1.val<=list2.val:
                 curr.next=list1
                 list1=list1.next
-
             else:
                 curr.next=list2
                 list2=list2.next
             curr=curr.next
 
-            if first:
-                head=curr
-                first=False 
-
-        #better solution 
-        # if list1 or list2:
-        #     cur.next = list1 if list1 else list2
-
-        while list1:
+        if list1:
             curr.next=list1
-            curr=curr.next
-
-            if first:
-                head=curr
-                first=False
-            list1=list1.next
-
-        while list2:
+        if list2:
             curr.next=list2
-            curr=curr.next
-            if first:
-                head=curr
-                first=False
-            list2=list2.next
-        return head
-    
-    # cur = dummy = ListNode()
-    # cur.next = list1....
-    # return dummy.next
 
+        return dummy.next
+        
+
+    # 143. Reorder List       https://leetcode.com/problems/reorder-list/description/
+    # Input: head = [1,2,3,4,5]   Output: [1,5,2,4,3]
     def reorderList(self, head: Optional[ListNode]) -> None:
-        if not head or not head.next:
-            return head
+
+        def invert(currNode):
+            if not currNode:
+                return False
+            newHead=currNode
+            if currNode.next:
+                newHead=invert(currNode.next)
+                currNode.next.next=currNode
+            currNode.next=None
+            return newHead
         
         #get middle list
-        slow=head
-        fast=head.next
-        while fast and fast.next:
-            slow=slow.next
-            fast=fast.next.next
+        # slow=head
+        # fast=head.next
+        # while fast and fast.next:
+        #     slow=slow.next
+        #     fast=fast.next.next
 
-        #reverse second half
-        curr=slow.next
+        slow,fast=head,head
+
+        while fast:
+            fast=fast.next.next if fast.next else None
+            if fast:
+                slow=slow.next
+        list2=slow.next
         slow.next=None
-        prev=None
-
-        while curr:
-            foll=curr.next
-            curr.next=prev
-            prev=curr
-            curr=foll
-        
-        list2=prev
+        list2=invert(list2)
         list1=head
+        
+        while list1 and list2:
+            aux1=list1.next
+            list1.next=list2
+            aux2=list2.next
+            list2.next=aux1
 
-        #join two lists
-        while list1:
-            list1Prev=list1
-            list1=list1.next
-            list1Prev.next=list2
-
-            if  list2:
-                list2Prev=list2
-                list2=list2.next
-                list2Prev.next=list1
+            list1=aux1
+            list2=aux2
+        return head
+        
 
 
 #19. Remove Nth Node From End of List, tambuien se puede resolver en una sola pasada
@@ -185,77 +163,72 @@ class Solution:
             index+=1
             curr=curr.next
         curr.next=curr.next.next
+    # 138. Copy List with Random Pointer          https://leetcode.com/problems/copy-list-with-random-pointer/description/
+    # Construct a deep copy of the list.
+    def copyRandomList(self, head: 'Optional[Node]') -> 'Optional[Node]':
+        curr=head
+        oldToNew={}
+        oldToNew[None]=None
 
+        while curr:
+            newNode=Node(curr.val)
+            oldToNew[curr]=newNode
+            curr=curr.next
+
+        curr=head
+        while curr:
+            newNode=oldToNew[curr]
+            newNode.random=oldToNew[curr.random]
+            newNode.next=oldToNew[curr.next]
+            
+            curr=curr.next
+        return oldToNew[head]
+    
+    # 2. Add Two Numbers      https://leetcode.com/problems/add-two-numbers/description/
+    # Add the two numbers and return the sum as a linked list.
     def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
-
-        carry=0
         dummy=ListNode()
         prev=dummy
+        carry=0
+        while l1 or l2 or carry:
+            val1=l1.val if l1 else 0
+            val2=l2.val if l2 else 0
+            summ=val1+val2+carry
+            prev.next=ListNode(summ%10)
+            carry=summ//10
 
+            prev=prev.next
+            l1=l1.next if l1 else None
+            l2=l2.next if l2 else None
 
-        while l1 and l2:
-            curr=ListNode()
-            curr.val=(l1.val+l2.val+carry)%10
-            carry=int((l1.val+l2.val+carry)/10)
-            prev.next=curr
-            prev=curr
-            l1=l1.next
-            l2=l2.next
-            print(*Auxiliary.listToArray(dummy))
-
-        while l1:
-            curr=ListNode()
-            curr.val=(l1.val+carry)%10
-            carry=int((l1.val+carry)/10)
-            prev.next=curr
-            prev=curr
-            l1=l1.next
-
-        while l2:
-            curr=ListNode()
-            curr.val=(l2.val+carry)%10
-            carry=int((l2.val+carry)/10)
-            prev.next=curr
-            prev=curr
-            l2=l2.next
-        if carry>0:
-            curr=ListNode()
-            curr.val=carry
-            prev.next=curr
-
-
-        if not dummy.next:
-            return dummy
-        
         return dummy.next
     
-    #141. Linked List Cycle
+    #141. Linked List Cycle         https://leetcode.com/problems/linked-list-cycle/description/
+    # Return true if there is a cycle in the linked list.
     def hasCycle(self, head: Optional[ListNode]) -> bool:
         nodes=set()
-
 
         while head and head not in nodes:
             nodes.add(head)
             head=head.next
-        if head:
-            return True
-        else:
-            return False
-        
-    #287. Find the Duplicate Number
-    def findDuplicate(self, nums: List[int]) -> int:
-        if len(nums)<=2:
-            return nums[0]
-        
-        walker=0
-        runner=0
-        
 
-        while nums[walker]!=nums[runner] or walker==runner:
-            walker=(walker+1)%len(nums)
-            runner=(runner+2)%len(nums)
-            
-        return nums[walker]
+        return bool(head)       
+        
+    #287. Find the Duplicate Number     https://leetcode.com/problems/find-the-duplicate-number/description/
+    # There is only one repeated number in nums, return this repeated number
+    def findDuplicate(self, nums: List[int]) -> int:
+        slow,fast=0,0
+        while True:
+            slow=nums[slow]
+            fast=nums[nums[fast]]
+            if slow==fast:
+                break
+        slow2=0
+        while True:
+            slow=nums[slow]
+            slow2=nums[slow2]
+            if slow==slow2:
+                return slow
  
 if __name__ == '__main__':
     solution_instance = Solution()

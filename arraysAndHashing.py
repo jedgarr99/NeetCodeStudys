@@ -73,23 +73,73 @@ class Solution:
 
     # 49. Group Anagrams          https://leetcode.com/problems/group-anagrams/description/
     # Given an array of strings strs, group the anagrams together.
+    #using dictionaries bring order problem, you can use an array instead 
     def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
-        counters=[]
-        for s in strs:
-            counters.append(Solution.generateCounter(s))
-
-        anagrams={}    
-        for i in range(len(counters)):
-            if counters[i] in anagrams:
-                anagrams[counters[i]].append(strs[i])
-            else:
-                anagrams[counters[i]]=[strs[i]]
-
-        anagramsList=[]
-        for value in anagrams.values():
-            anagramsList.append(value)
+        def getKey(word):
+            key=[0]*26
+            for c in word:
+                key[ord(c)-ord('a')]+=1
+            return tuple(key)
         
-        return anagramsList
+        anagrams={}
+        for word in strs:
+            key=getKey(word)
+            if key not in anagrams:
+                anagrams[key]=[]
+            anagrams[key].append(word)
+
+        res=[]
+        for key in anagrams:
+            res.append(anagrams[key])
+        return res
+    
+    #347. Top K Frequent Elements        https://leetcode.com/problems/top-k-frequent-elements/description/
+    #Given an integer array nums and an integer k, return the k most frequent elements. 
+    # You may return the answer in any order.
+    def topKFrequent(self, nums: list[int], k: int) -> list[int]:
+        counter={}
+
+        for x in nums:
+            if x not in counter:
+                counter[x]=0
+            counter[x]+=1
+        
+        freq=[[] for i in range(len(nums)+1)]
+        for num, f in counter.items():
+            freq[f].append(num)
+        #print(freq)
+        res=[]
+        for i in range(len(nums),0,-1):
+            for j in range(len(freq[i])):
+                res.append(freq[i][j])
+                if len(res)==k:
+                    return res
+    #String Encode and Decode
+    # Design an algorithm to encode a list of strings to a single string.
+    # The encoded string is then decoded back to the original list of strings.
+
+    def encode(self, strs: List[str]) -> str:
+        res=""
+        for s in strs:
+            res+=str(len(s))+'&'+s
+        return res
+
+    def decode(self, s: str) -> List[str]:
+        res=[]
+        print(s)
+
+        l=0
+        while l < len(s):
+            r=l
+            while s[r]!= '&':
+                r+=1
+            print('aaa',s[l:r])
+            wordLength=int(s[l:r])
+            print(s[r+1:r+2+wordLength])
+            res.append(s[r+1:r+1+wordLength])
+            l=r+1+wordLength
+        return res
+
     
     # 238. Product of Array Except Self            https://leetcode.com/problems/product-of-array-except-self/description/
     # Given an integer array nums, return an array answer such that answer[i] is equal to the product of all the elements of nums except nums[i]
