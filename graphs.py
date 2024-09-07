@@ -283,78 +283,69 @@ class Solution():
         for nextCourse, index in prerequisites:
             courses[index].append(nextCourse)
 
+    # Count Connected Components      https://neetcode.io/problems/count-connected-components
+    # Return the total number of connected components in that graph.
+    def countComponents(self, n: int, edges: List[List[int]]) -> int:
+        par=[i for i in range(n)]
+        rank=[1]*n
+
+        def findPar(node):
+            nextPar=par[node]
+            while nextPar != par[nextPar]:
+                par[nextPar]=par[par[nextPar]]
+                nextPar=par[nextPar]
+            return nextPar
+
+        def union(node1,node2):
+            par1,par2=findPar(node1),findPar(node2)
+            if par1==par2:
+                return 0
+            rank1,rank2=rank[node1],rank[node2]
+            if rank1>rank2:
+                par[par2]=par1
+                rank[par1]+=rank[par2]
+            else:
+                par[par1]=par2
+                rank[par2]+=rank[par1]
+            return 1
+        res=n
+        for node1, node2 in edges:
+            res-=union(node1,node2)
+        return res
+
             
     # 684. Redundant Connection      https://leetcode.com/problems/redundant-connection/
     # Return an edge that can be removed so that the resulting graph is a tree of n nodes. 
     # If there are multiple answers, return the answer that occurs last in the input.
     def findRedundantConnection(self, edges: List[List[int]]) -> List[int]:
-        def dfs(node, prev):
-            if node in visited:
-                path.append(node)
-                #print('Found cycle at', node)
-                return True  # Indicate that a cycle was found
+        par=[i for i in range(len(edges))]
+        rank=[1]*len(edges)
 
-            visited.add(node)
-            path.append(node)
-            #print('Adding', node)
+        def findPar(node):
+            nextPar=par[node]
+            while nextPar != par[nextPar]:
+                par[nextPar]=par[par[nextPar]]
+                nextPar=par[nextPar]
+            return nextPar
 
-            for nextNode in adj[node]:
-                if nextNode != prev:
-                    if dfs(nextNode, node):  # If a cycle was found
-                        return True  # Propagate the cycle detection up the call stack
+        def union(node1,node2):
+            par1,par2=findPar(node1),findPar(node2)
+            if par1==par2:
+                return 0
+            rank1,rank2=rank[node1],rank[node2]
+            if rank1>rank2:
+                par[par2]=par1
+                rank[par1]+=rank[par2]
+            else:
+                par[par1]=par2
+                rank[par2]+=rank[par1]
+            return 1
+        res=[-1,-1]
+        for node1, node2 in edges:
+            if not union(node1-1,node2-1):
+                res=[node1,node2]
+        return res
 
-            path.pop()  # Remove node from path if no cycle is found after exploring all neighbors
-            return False
-
-
-
-        #dict with edge: position, flipedEdge: same position
-        #find cycle from Nodde to same node
-        #get list of edges of cycle, they may be flipped
-        #get max position of the edges
-        adj={}
-        positions={}
-        for i,edge in enumerate(edges):
-            a,b=edge
-            positions[(a,b)]=i
-            positions[(b,a)]=i
-            if a not in adj:
-                adj[a]=[]
-            if b not in adj:
-                adj[b]=[]
-            adj[a].append(b)
-            adj[b].append(a)
-        #print(positions)
-        #print(adj)
-        visited=set()
-        firstNode=edges[0][0]
-        prev=firstNode
-        path=[]
-        dfs(firstNode, prev)
-        maxIndex=-1
-        stop=path[-1]
-        i=len(path)-1
-        while i>=1:
-            if path[i-1]==stop:
-                break
-            thisEdge=(path[i],path[i-1])
-            index=positions[thisEdge]
-            maxIndex=max(maxIndex,index)
-            i-=1
-
-
-        
-        print(path)
-
-        return edges[maxIndex]
-        
-
-
-      
-
-
-
-    
 if __name__=="__main__":
     mySolution=Solution()
     print(mySolution.maxAreaOfIsland(grid =[[1]]))

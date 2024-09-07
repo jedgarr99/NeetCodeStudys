@@ -1,71 +1,41 @@
-from typing import Optional
+from typing import List, Optional
 
 
 #208. Implement Trie (Prefix Tree)
 
-class TrieNode():
+class TrieNode:
     def __init__(self):
         self.children=[None]*26
-        self.end=False
+        self.isEnd=False
 
+class Trie:
 
-class Trie():
     def __init__(self):
         self.root=TrieNode()
-
-    def insert(self,word:str):
-        node=self.root
-        for x in word:
-            index=ord(x)-ord('a')
-            if not node.children[index]:
-                newNode=TrieNode()
-                node.children[index]=newNode
-            node=node.children[index]
-        node.end=True
-    
-    def search(self,word:str):
-        node=self.root
-        for x in word:
-            index=ord(x)-ord('a')
-            if not node.children[index]:
-                return False
-            node=node.children[index]
-
-        return node.end
-    
-    def searchRecursive(self,word:str):
-        node=self.root
         
-        def searchAux(node:TrieNode,word:str):
-            if not node:
-                return False
-            if len(word)==0:
-                print('end ',node.end)
-                return node.end
-            if len(word)>0:
-                c=word[0]
-                
-                index=ord(c)-ord('a')
-
-                print(c,' ',word[1:],node.end)
-                node=node.children[index]
-                
-            
-            return searchAux(node,word[1:])
-            
-        return searchAux(node,word)
-
+    def insert(self, word: str) -> None:
+        curr=self.root
+        for c in word:
+            if not curr.children[ord(c)-ord('a')]:
+                curr.children[ord(c)-ord('a')]=TrieNode()
+            curr=curr.children[ord(c)-ord('a')]
+        curr.isEnd=True
         
-    
-    
-    def startsWith(self,prefix:str):
-        node=self.root
-        for x in prefix:
-            index=ord(x)-ord('a')
-            if not node.children[index]:
+    def search(self, word: str) -> bool:
+        curr=self.root
+        for c in word:
+            if not curr.children[ord(c)-ord('a')]:
                 return False
-            node=node.children[index]
+            curr=curr.children[ord(c)-ord('a')]
+        return curr.isEnd
+        
 
+    def startsWith(self, prefix: str) -> bool:
+        curr=self.root
+        for c in prefix:
+            if not curr.children[ord(c)-ord('a')]:
+                return False
+            curr=curr.children[ord(c)-ord('a')]
         return True
 
             
@@ -76,52 +46,96 @@ class WordDictionary:
 
     def __init__(self):
         self.root=TrieNode()
-        
 
     def addWord(self, word: str) -> None:
-        node=self.root
-        for x in word:
-            index=ord(x)-ord('a')
-            if not node.children[index]:
-                newNode=TrieNode()
-                node.children[index]=newNode
-            node=node.children[index]
-        node.end=True
-        
+        curr=self.root
+        for c in word:
+            if not curr.children[ord(c)-ord('a')]:
+                curr.children[ord(c)-ord('a')]=TrieNode()
+            curr=curr.children[ord(c)-ord('a')]
+        curr.isEnd=True
+
+    def searchRecursive(self, word,currNode):
+        if not currNode:
+            return False
+        if len(word)==0:
+            return currNode.isEnd
+
+        if word[0]!='.':
+            nextNode=currNode.children[ord(word[0])-ord('a')]
+            return self.searchRecursive(word[1:],nextNode)
+        else:
+            for i in range(26):
+                if currNode.children[i] and self.searchRecursive(word[1:],currNode.children[i]) :
+                    return True
+            return False
 
     def search(self, word: str) -> bool:
-        node=self.root
+        curr=self.root
+        return self.searchRecursive( word,curr)
+    
+
+
+
+
+
+class TrieNode:
+    def __init__(self):
+        self.children = {}  # Use dictionary for space-efficient child nodes
+        self.isEnd = False  # Boolean flag to mark end of word
+
+    def nextNode(self, letter):
+        return self.children.get(letter)
+
+class Trie:
+
+    def __init__(self):
+        self.root = TrieNode()
         
-        def searchAux(node:TrieNode,word:str,counter:int):
-            if not node:
-                return False
-            if len(word)==0:
-                print('end ',node.end)
-                return node.end
-            if len(word)>0:
-                c=word[0]
-                
+    def insert(self, word: str) -> None:
+        curr = self.root
+        for c in word:
+            if c not in curr.children:
+                curr.children[c] = TrieNode()
+            curr = curr.children[c]
+        curr.isEnd = True
 
-            #print(c,' ',word[1:],node.end)
-            if c=='.':
-                insideCounter=0
-                nextNode=None
-                for x in node.children:
-                    if x!=None  :
-                        insideCounter+=1
-                        if insideCounter==counter:
-                            nextNode=x
-                        else:
-                            pass
-                return searchAux(nextNode,word[1:],1) or searchAux(node,word[1:],2)
-
-
-            else:
-                index=ord(c)-ord('a')
-                node=node.children[index]
-            
+class Solution:
+    def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:
+        wordTrie = Trie()
+        ROWS, COLS = len(board), len(board[0])
         
-                return searchAux(node,word[1:],1)
+        for word in words:
+            wordTrie.insert(word)
+        
+        res = set()
+        
+        def dfs(r, c, currNode, currWord):
+            if (r < 0 or c < 0 or r >= ROWS or c >= COLS or (r, c) in visited or currNode is None):
+                return
             
-        return searchAux(node,word,1)
-
+            char = board[r][c]
+            nextNode = currNode.nextNode(char)
+            
+            if nextNode is None:
+                return
+            
+            currWord += char
+            if nextNode.isEnd:
+                res.add(currWord)
+            
+            visited.add((r, c))
+            # Explore all four directions
+            dfs(r + 1, c, nextNode, currWord)
+            dfs(r - 1, c, nextNode, currWord)
+            dfs(r, c + 1, nextNode, currWord)
+            dfs(r, c - 1, nextNode, currWord)
+            visited.remove((r, c))
+        
+        res = set()
+        for r in range(ROWS):
+            for c in range(COLS):
+                visited = set()
+                dfs(r, c, wordTrie.root, "")
+        
+        return list(res)

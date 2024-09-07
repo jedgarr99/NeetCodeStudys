@@ -1,5 +1,6 @@
 
 from collections import deque
+import heapq
 from typing import List, Optional
 class Node:
     def __init__(self, x: int, next: 'Node' = None, random: 'Node' = None):
@@ -229,13 +230,115 @@ class Solution:
             slow2=nums[slow2]
             if slow==slow2:
                 return slow
+            
+    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        minHeap=[]
+        dummy=ListNode()
+        curr=dummy
+        for i,node in enumerate(lists):
+            if node:
+                heapq.heappush(minHeap,(node.val,i))
+        while minHeap:
+            val,index=heapq.heappop(minHeap)
+            nextNode=lists[index]
+            lists[index]=lists[index].next
+
+            if lists[index]:
+                heapq.heappush(minHeap,(lists[index].val,index))
+            curr.next=nextNode
+            curr=curr.next
+        return dummy.next
+    def reverseKGroup(self, head: Optional[ListNode], k: int) -> Optional[ListNode]:
+        def reverse(prevTail):
+            while stack:
+                prevTail.next=stack.pop()
+                prevTail=prevTail.next
+            return prevTail
+        
+        dummy=ListNode()
+        dummy.next=head
+        prevTail=dummy
+
+        curr=head
+        nextNode=None
+        stack=deque()
+        i=0
+
+        while curr:
+ 
+            i+=1
+            stack.append(curr)
+            if i%k==0:
+                nextNode=curr.next
+                newTail=reverse(prevTail)
+                newTail.next=nextNode
+                prevTail=newTail
+                curr=nextNode
+            else:
+
+                curr=curr.next
+           
+
+        return dummy.next
+
+           
+# 146. LRU Cache      https://leetcode.com/problems/lru-cache/description/
+# The functions get and put must each run in O(1) average time complexity.
+class LRUnode:
+    def __init__(self, key=-1, value=0, nextNode=None, prevNode=None):
+        self.key = key
+        self.value = value
+        self.nextNode = nextNode
+        self.prevNode = prevNode
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.currCapacity = 0
+        self.left = LRUnode()  # Dummy head
+        self.right = LRUnode() # Dummy tail
+        self.left.nextNode = self.right
+        self.right.prevNode = self.left
+        self.cache = {}  # key: node
+
+    def _remove(self, node: LRUnode):
+        node.prevNode.nextNode = node.nextNode
+        node.nextNode.prevNode = node.prevNode
+
+    def _add(self, node: LRUnode):
+        node.nextNode = self.left.nextNode
+        node.prevNode = self.left
+        self.left.nextNode.prevNode = node
+        self.left.nextNode = node
+
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        
+        node = self.cache[key]
+        self._remove(node)
+        self._add(node)
+        
+        return node.value
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            node = self.cache[key]
+            node.value = value
+            self._remove(node)
+            self._add(node)
+        else:
+            if self.currCapacity == self.capacity:
+                lru = self.right.prevNode
+                self._remove(lru)
+                del self.cache[lru.key]
+                self.currCapacity -= 1
+
+            newNode = LRUnode(key, value)
+            self._add(newNode)
+            self.cache[key] = newNode
+            self.currCapacity += 1
  
 if __name__ == '__main__':
     solution_instance = Solution()
     print(solution_instance.findDuplicate(nums =[1,3,4,2,2]))
-    # list1=Auxiliary.arrayToLinkedList([2,4,3])
-    # list2=Auxiliary.arrayToLinkedList([5,6,4])
-
-    # res=solution_instance.addTwoNumbers(list1,list2)
-    # print(*Auxiliary.listToArray(res))
-    

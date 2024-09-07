@@ -1,6 +1,7 @@
 
 
 import math
+from typing import List
 
 
 class Solution():
@@ -134,7 +135,7 @@ class Solution():
             if nums[mid]==target:
                 return mid
 
-            #left part is sorted , think of 4 5 6 7 8 0 1
+            #left part is sorted , think of 4 5 6 7< 8 0 1
             if nums[l]<=nums[mid]:
                 if target > nums[mid] or target< nums[l]:
                     l=mid+1
@@ -147,3 +148,60 @@ class Solution():
                 else:
                     l=mid+1
         return -1
+    
+    # Median of Two Sorted Arrays     https://leetcode.com/problems/median-of-two-sorted-arrays/description/
+    # Given two sorted arrays nums1 and nums2 of size m and n respectively, 
+    # return the median of the two sorted arrays.
+    def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
+        total=len(nums1)+len(nums2)
+        half=total//2
+        a,b=nums1,nums2
+        if len(b)<len(a):
+            a,b=b,a
+        l,r=0,(len(a)-1)
+        while True:
+            i=(l+r)//2
+            j=half-i-2
+
+            leftA=a[i]  if i>=0 else -math.inf
+            rightA=a[i+1] if i+1 <len(a) else math.inf
+            leftB=b[j]  if j>=0 else -math.inf
+            rightB=b[j+1] if j+1 <len(b) else math.inf
+            if leftA<=rightB and leftB<=rightA:
+                if total%2:
+                    return min(rightA,rightB)
+                else:
+                    return (min(rightA,rightB)+max(leftA,leftB))/2
+            elif leftA>rightB:
+                r=i-1
+            else:
+                l=i+1
+# 981. Time Based Key-Value Store     https://leetcode.com/problems/time-based-key-value-store/description/                
+class TimeMap:
+
+    def __init__(self):
+        self.tMap={}
+        
+
+    def set(self, key: str, value: str, timestamp: int) -> None:
+        if key not in self.tMap:
+            self.tMap[key]=[]
+        self.tMap[key].append((timestamp,value))
+        
+
+    def get(self, key: str, timestamp: int) -> str:
+        if key not in self.tMap:
+            return ""
+        values=self.tMap[key]
+        l, r=0,len(values)-1
+        bestSol=""
+        while l<=r:
+            mid=(l+r)//2
+            if values[mid][0]==timestamp:
+                return values[mid][1]
+            elif values[mid][0]<timestamp:
+                bestSol=values[mid][1]
+                l=mid+1
+            else:
+                r=mid-1
+        return bestSol

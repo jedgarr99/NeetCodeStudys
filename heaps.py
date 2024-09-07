@@ -97,6 +97,54 @@ class Solution:
             time+=1
             
         return time
+# 355. Design Twitter         https://leetcode.com/problems/design-twitter/description/
+# Design a simplified version of Twitter where users can post tweets, follow/unfollow 
+# another user, and is able to see the 10 most recent tweets in the user's news feed.
+class Twitter:
+
+    def __init__(self):
+        self.userFollow={}
+        self.userTweets={}
+        self.time=0
+        
+
+    def postTweet(self, userId: int, tweetId: int) -> None:
+        if userId not in self.userTweets:
+            self.userTweets[userId]=[]
+        self.userTweets[userId].append((self.time,tweetId))
+        self.time-=1
+        
+
+    def getNewsFeed(self, userId: int) -> List[int]:
+        
+        res=[]
+        self.follow(userId,userId)
+        followees=self.userFollow[userId]
+        minHeap=[]
+        for followee in followees:
+            
+            tweets=self.userTweets[followee] if followee in self.userTweets else []
+           
+            for tweet in tweets:
+                heapq.heappush(minHeap,tweet)
+        count=0
+        while minHeap and count<10:
+            count+=1
+            t,tweetId=heapq.heappop(minHeap)
+            res.append(tweetId)
+        return res
+
+        
+
+    def follow(self, followerId: int, followeeId: int) -> None:
+        if followerId not in self.userFollow:
+            self.userFollow[followerId]=set()
+        self.userFollow[followerId].add(followeeId)
+
+    def unfollow(self, followerId: int, followeeId: int) -> None:
+        if followerId  in self.userFollow:
+            self.userFollow[followerId].remove(followeeId)
+        
     
 # 295. Find Median from Data Stream  https://leetcode.com/problems/find-median-from-data-stream/description/
 # Implement the MedianFinder class:
