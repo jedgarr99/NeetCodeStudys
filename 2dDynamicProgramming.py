@@ -165,7 +165,7 @@ class Solution:
     
     # Interleaving String	https://leetcode.com/problems/interleaving-string/
     # find whether s3 is formed by an interleaving of s1 and s2.
-    def isInterleave(self, s1: str, s2: str, s3: str) -> bool:
+    def isInterleaveTopDown(self, s1: str, s2: str, s3: str) -> bool:
         dp={}
         def dfs(i,j):
             if i==len(s1) and j==len(s2) and i+j ==len(s3):
@@ -193,6 +193,40 @@ class Solution:
                 dp[(i,j)]=False
                 return False
         return dfs(0,0)
+    
+    def isInterleaveTopDownSimplified(self, s1: str, s2: str, s3: str) -> bool:
+        if len(s1)+len(s2)!= len(s3):
+            return False
+        dp={}
+        def dfs(i, j): 
+            if i == len(s1) and j == len(s2): 
+                return True 
+            if (i, j) in dp: 
+                return dp[(i, j)] 
+
+            if i < len(s1) and s1[i] == s3[i + j] and dfs(i + 1, j): 
+                return True 
+            if j < len(s2) and s2[j] == s3[i + j]and dfs(i, j + 1): 
+                return True 
+            dp[(i, j)] = False 
+            return False 
+
+        return dfs(0, 0)
+    
+    def isInterleave(self, s1: str, s2: str, s3: str) -> bool:
+        if len(s1) + len(s2) != len(s3):
+            return False
+
+        dp = [[False] * (len(s2) + 1) for i in range(len(s1) + 1)]
+        dp[len(s1)][len(s2)] = True
+
+        for i in range(len(s1), -1, -1):
+            for j in range(len(s2), -1, -1):
+                if i < len(s1) and s1[i] == s3[i + j] and dp[i + 1][j]:
+                    dp[i][j] = True
+                if j < len(s2) and s2[j] == s3[i + j] and dp[i][j + 1]:
+                    dp[i][j] = True
+        return dp[0][0]
     
     # Longest Increasing Path In a Matrix	https://leetcode.com/problems/longest-increasing-path-in-a-matrix/
     # Given an m x n integers matrix, return the length of the longest increasing path in matrix.  
@@ -233,8 +267,8 @@ class Solution:
             dp[(i,j)]=include+dontInclude
             return dp[(i,j)]
         res=dfs(0,0)
-        for i in range(len(s)):
-            print([dp[(i,j)] if (i,j) in dp else -1 for j in range(len(t)) ])
+        # for i in range(len(s)):
+        #     print([dp[(i,j)] if (i,j) in dp else -1 for j in range(len(t)) ])
         return res
         
 
@@ -265,28 +299,22 @@ class Solution:
         dp={}
 
         def dfs(i,j):
-            if i>= len(word1) and j>=len(word2):
-                return 0
+            if i>= len(word1) or j>=len(word2):
+                remainingI=len(word1)-i
+                remainingJ=len(word2)-j
+                return abs(remainingI-remainingJ)
             if (i,j) in dp:
                 return dp[(i,j)]
-            delete=math.inf
-            insert=math.inf
-            use=math.inf
-            replace=math.inf
-            if i<len(word1):
-                delete=1+dfs(i+1,j)
-            if j<len(word2):
-                insert=1+dfs(i,j+1)
-            if i<len(word1) and j<len(word2):
-                if word1[i]==word2[j]:
-                    use=dfs(i+1,j+1)
-                else:
-                    replace=1+dfs(i+1,j+1)
-            dp[(i,j)]=min(delete,insert,use,replace)
+            replaceOruse= 0 if word1[i]==word2[j] else 1
+            delete=1+dfs(i+1,j)
+            insert=1+dfs(i,j+1)
+            skip=replaceOruse+dfs(i+1,j+1)
+
+            dp[(i,j)]=min(delete,insert,skip)
             return dp[(i,j)]
         return dfs(0,0)
     
-    def minDistanceTopDown(self, word1: str, word2: str) -> int:
+    def minDistance(self, word1: str, word2: str) -> int:
         ROWS,COLS=len(word1),len(word2)
         dp=[[0]* (COLS+1) for r in range(ROWS+1)]
         for r in range(ROWS,-1,-1):
